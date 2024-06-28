@@ -22,6 +22,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
         && \
         update-ca-certificates
 
+RUN mkdir /bin/server
 
 ARG UID=10001
 #RUN adduser \
@@ -34,8 +35,8 @@ ARG UID=10001
 #    appuser
 USER root
 
-COPY --from=build /bin/server /bin/
-
+COPY --from=build /bin/server /bin/server/
+COPY ./config/config.yaml /bin/server/
 EXPOSE 7777
 
-ENTRYPOINT [ "/bin/server" ]
+ENTRYPOINT [ "/bin/server/server" ]

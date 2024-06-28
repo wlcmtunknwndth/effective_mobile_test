@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	Db     Database `yaml:"db"`
+	Env    string   `yaml:"env" env-default:"dev"`
+	Db     Database `yaml:"db" `
 	Server Server   `yaml:"server"`
 	Broker Broker   `yaml:"broker"`
 }

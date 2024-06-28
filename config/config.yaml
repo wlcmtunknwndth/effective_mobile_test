@@ -1,0 +1,16 @@
+env: "local"
+db:
+  db_user: "postgres"
+  db_pass: "postgres"
+  db_name: "postgres"
+  ssl_mode: "disable"
+  port: 5432
+server:
+  address: "0.0.0.0:7777"
+  timeout: 15s
+  idle_timeout: 30s
+broker:
+  max_reconnects: 5
+  reconnect_wait: 5s
+  address: "nats://nats:4222"
+  retry: Yes

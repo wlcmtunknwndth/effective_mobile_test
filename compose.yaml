@@ -3,6 +3,8 @@ services:
     build:
       context: .
       target: final
+    environment:
+      - config_path=/bin/server/config.yaml
     ports:
       - 7777:7777
     depends_on:

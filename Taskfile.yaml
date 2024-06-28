@@ -1,0 +1,18 @@
+version: "3"
+
+tasks:
+  run:
+    aliases:
+      - run
+    desc: "run container"
+    cmds:
+      - docker compose up
+
+  delete:
+    aliases:
+      - del
+    desc: "delete container and all the stuff"
+    cmds:
+      - docker compose down
+      - docker rmi effective_mobile_test-server
+      - docker volume rm effective_mobile_test_db

@@ -1,0 +1,53 @@
+services:
+  server:
+    build:
+      context: .
+      target: final
+    ports:
+      - 7777:7777
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+
+  postgres:
+    image: postgres
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGUSER=postgres
+    ports:
+      - "5432:5432"
+    networks: ["nats"]
+
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats
+    ports:
+      - "8888:8888"
+      - "4222:4222"
+      - "8222:8222"
+    command: "--cluster_name NATS -p 4222 --cluster nats://0.0.0.0:8888 --http_port 8222"
+    networks: ["nats"]
+
+networks:
+  nats:
+    name: nats
+
+volumes:
+  db:
+    driver: local
+  data:
+    driver: local

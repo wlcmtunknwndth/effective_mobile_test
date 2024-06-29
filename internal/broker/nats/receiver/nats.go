@@ -1,4 +1,4 @@
-package nats
+package receiver
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 type UsersStorage interface {
 	GetUserByPassport(ctx context.Context, passportNumber string) (*models.User, error)
 
-	CreateUser(ctx context.Context, user *models.User) error
+	CreateUser(ctx context.Context, user *models.User) (uint64, error)
 	GetUser(ctx context.Context, id uint64) (*models.User, error)
 	DeleteUser(ctx context.Context, id uint64) error
 	UpdateUser(ctx context.Context, user *models.User) error
@@ -24,7 +24,7 @@ type TasksStorage interface {
 	GetTasksWorkload(ctx context.Context, passportNumber string) ([]models.Task, error)
 }
 
-type Broker struct {
+type Receiver struct {
 	conn  *nats.Conn
 	users UsersStorage
 	tasks TasksStorage
@@ -32,7 +32,7 @@ type Broker struct {
 
 const scope = "internal.broker.nats."
 
-func New(cfg *config.Broker, users UsersStorage, tasks TasksStorage) (*Broker, error) {
+func New(cfg *config.Broker, users UsersStorage, tasks TasksStorage) (*Receiver, error) {
 	const op = scope + "New"
 	natsSrv, err := nats.Connect(cfg.Address,
 		nats.RetryOnFailedConnect(cfg.Retry),
@@ -47,13 +47,13 @@ func New(cfg *config.Broker, users UsersStorage, tasks TasksStorage) (*Broker, e
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &Broker{
+	return &Receiver{
 		conn:  natsSrv,
 		users: users,
 		tasks: tasks,
 	}, nil
 }
 
-func (b *Broker) Close() {
+func (b *Receiver) Close() {
 	b.conn.Close()
 }

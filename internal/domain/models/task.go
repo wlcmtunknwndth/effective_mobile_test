@@ -3,10 +3,10 @@ package models
 import "time"
 
 type Task struct {
-	Id          uint64
-	UserId      uint64
-	Description string
-	CreatedAt   time.Time
-	DoneAt      time.Time
-	DeadlineAt  time.Time
+	Model
+	UserID      uint64    `gorm:"index;type:bigint;autoIncrement" json:"user_id"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	DoneAt      time.Time `json:"done_at"`
+	ExpiresAt   time.Time `json:"expires_at"`
 }

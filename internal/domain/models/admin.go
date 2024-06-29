@@ -1,6 +1,6 @@
 package models
 
 type Admin struct {
-	UserID  uint64
-	IsAdmin bool
+	Model
+	IsAdmin bool `gorm:"default:false" json:"is_admin"`
 }

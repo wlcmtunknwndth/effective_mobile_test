@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	ID             uint64
-	PassportNumber string
-	PassHash       []byte
+	Model
+	PassportNumber string `gorm:"type:varchar(12);uniqueIndex;unique"`
+	PassHash       []byte `gorm:"type:bytea"`
 }

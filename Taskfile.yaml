@@ -16,3 +16,9 @@ tasks:
       - docker compose down
       - docker rmi effective_mobile_test-server
       - docker volume rm effective_mobile_test_db
+
+  clean:
+    desc: "turn of containers and delete image"
+    cmds:
+      - docker compose down
+      - docker rmi effective_mobile_test-server

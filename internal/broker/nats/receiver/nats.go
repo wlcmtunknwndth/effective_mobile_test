@@ -20,8 +20,8 @@ type UsersStorage interface {
 }
 
 type TasksStorage interface {
-	CreateTask(ctx context.Context, user *models.Task) error
-	GetTasksWorkload(ctx context.Context, passportNumber string) ([]models.Task, error)
+	CreateTask(ctx context.Context, task *models.Task) error
+	GetWorkload(ctx context.Context, passportNumber string) ([]models.Task, error)
 }
 
 type Receiver struct {

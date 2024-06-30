@@ -72,7 +72,7 @@ func (s *Storage) IsAdmin(ctx context.Context, id uint64) (bool, error) {
 	const op = scope + "IsAdmin"
 
 	var admin models.Admin
-	if res := s.db.Model(&models.Admin{}).First(&admin); res.Error != nil {
+	if res := s.db.Model(&models.Admin{}).Where("user_id = ?", id).First(&admin); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return false, nil
 		}

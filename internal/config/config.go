@@ -20,11 +20,12 @@ type Server struct {
 }
 
 type Database struct {
-	DbUser  string `yaml:"db_user" env-required:"true"`
-	DbPass  string `yaml:"db_pass" env-required:"true"`
-	DbName  string `yaml:"db_name" env-required:"true"`
-	SslMode string `yaml:"ssl_mode" env-default:"false"`
-	Port    string `yaml:"port" env-required:"5432"`
+	Containerized bool   `yaml:"containerized" env-default:"false"`
+	DbUser        string `yaml:"db_user" env-required:"true"`
+	DbPass        string `yaml:"db_pass" env-required:"true"`
+	DbName        string `yaml:"db_name" env-required:"true"`
+	SslMode       string `yaml:"ssl_mode" env-default:"false"`
+	Port          string `yaml:"port" env-required:"5432"`
 }
 
 type Broker struct {

@@ -50,7 +50,7 @@ func (s *Storage) GetUser(ctx context.Context, id uint64) (*models.User, error) 
 func (s *Storage) UpdateUser(ctx context.Context, user *models.User) error {
 	const op = scope + "UpdateUser"
 
-	if res := s.db.Model(&models.User{}).Updates(user); res.Error != nil {
+	if res := s.db.Model(user).Updates(&user); res.Error != nil {
 		return fmt.Errorf("%s: %w", op, res.Error)
 	}
 

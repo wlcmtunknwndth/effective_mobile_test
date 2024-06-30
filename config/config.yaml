@@ -1,5 +1,6 @@
 env: "local"
 db:
+  containerized: no
   db_user: "postgres"
   db_pass: "postgres"
   db_name: "postgres"

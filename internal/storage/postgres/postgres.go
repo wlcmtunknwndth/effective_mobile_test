@@ -18,10 +18,18 @@ const scope = "internal.storage.postgres."
 func New(config *config.Database) (*Storage, error) {
 	const op = scope + "New"
 
-	connStr := fmt.Sprintf("postgres://%s:%s@postgres:%s/%s?sslmode=%s",
-		config.DbUser, config.DbPass, config.Port,
-		config.DbName, config.SslMode,
-	)
+	var connStr string
+	if config.Containerized {
+		connStr = fmt.Sprintf("postgres://%s:%s@postgres:%s/%s?sslmode=%s",
+			config.DbUser, config.DbPass, config.Port,
+			config.DbName, config.SslMode,
+		)
+	} else {
+		connStr = fmt.Sprintf("host=localhost user=%s password=%s dbname=%s port=%s sslmode=%s",
+			config.DbUser, config.DbPass, config.DbName, config.Port, config.SslMode,
+		)
+
+	}
 	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

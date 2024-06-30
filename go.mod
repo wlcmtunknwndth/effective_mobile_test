@@ -3,6 +3,7 @@ module github.com/wlcmtunknwndth/effective_mobile_test
 go 1.21.5
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/lib/pq v1.10.9
 	github.com/nats-io/nats.go v1.36.0

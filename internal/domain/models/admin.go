@@ -1,7 +1,7 @@
 package models
 
-type AdminDB struct {
-	UserId  uint64 `gorm:"type:bigint;uniqueIndex;primaryKey"`
+type Admin struct {
+	UserID  uint64 `gorm:"type:bigint;uniqueIndex;primaryKey"`
 	IsAdmin bool   `gorm:"default:false" json:"is_admin"`
 }
 

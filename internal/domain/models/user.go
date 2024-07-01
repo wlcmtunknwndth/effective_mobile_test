@@ -1,13 +1,18 @@
 package models
 
-type UserDB struct {
+import (
+	"strconv"
+	"strings"
+)
+
+type User struct {
 	Model
-	PassportSerie  uint16 `gorm:"type:int;uniqueIndex;unique"`
-	PassportNumber uint32 `gorm:"type:int;uniqueIndex;unique"`
+	PassportSerie  uint16 `gorm:"type:int;index:passport,unique"`
+	PassportNumber uint32 `gorm:"type:int;index:passport,unique"`
 	PassHash       []byte `gorm:"type:bytea"`
 }
 
-type UserInfoDB struct {
+type UserInfo struct {
 	UserID     uint64 `gorm:"type:bigint;uniqueIndex;primaryKey"`
 	Name       string `gorm:"type:varchar(30)"`
 	Surname    string `gorm:"type:varchar(30)"`
@@ -33,7 +38,35 @@ type UserInfoAPI struct {
 }
 
 type UserAPI struct {
-	ID       uint   `json:"id"`
+	ID       uint64 `json:"id"`
 	Passport string `json:"passport"`
-	Password string `json:"password"`
+	PassHash []byte `json:"password"`
+}
+
+func StringToSerieAndNumber(passportId string) (uint16, uint32) {
+	res := strings.Split(passportId, " ")
+	if len(res) != 2 {
+		return 0, 0
+	}
+	serie, err := strconv.ParseUint(res[0], 10, 16)
+	if err != nil {
+		return 0, 0
+	}
+
+	number, err := strconv.ParseUint(res[1], 10, 32)
+	if err != nil {
+		return 0, 0
+	}
+
+	return uint16(serie), uint32(number)
+}
+
+func ApiToDB(api UserAPI) User {
+	serie, number := StringToSerieAndNumber(api.Passport)
+	return User{
+		Model:          Model{ID: api.ID},
+		PassportSerie:  serie,
+		PassportNumber: number,
+		PassHash:       api.PassHash,
+	}
 }

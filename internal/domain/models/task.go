@@ -2,14 +2,14 @@ package models
 
 import "time"
 
-type TaskDB struct {
+type Task struct {
 	Model
 	UserID      uint64 `gorm:"index;type:bigint;autoIncrement"`
+	HoursSpent  float64
 	Description string `gorm:"type:varchar(2048)"`
 	CreatedAt   time.Time
 	DoneAt      time.Time
 	ExpiresAt   time.Time
-	timeSpent   time.Duration
 }
 
 type TaskAPI struct {

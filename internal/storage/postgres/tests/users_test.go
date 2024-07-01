@@ -10,7 +10,6 @@ import (
 	"github.com/wlcmtunknwndth/effective_mobile_test/internal/config"
 	"github.com/wlcmtunknwndth/effective_mobile_test/internal/domain/models"
 	"github.com/wlcmtunknwndth/effective_mobile_test/internal/storage/postgres"
-	"gorm.io/gorm"
 	"strconv"
 	"testing"
 )
@@ -23,25 +22,36 @@ var cfg = config.Database{
 	Port:    "5432",
 }
 
-var cases = []models.UserDB{
-	models.UserDB{
+var cases = []models.User{
+	models.User{
 		Model:          models.Model{},
 		PassportSerie:  6617,
 		PassportNumber: 899393,
 		PassHash:       []byte{0, 1, 2, 3},
 	},
-	models.UserDB{
+	models.User{
 		Model:          models.Model{},
 		PassportSerie:  6617,
 		PassportNumber: 834245,
 		PassHash:       []byte{0, 1, 2, 3},
 	},
-	models.UserDB{
+	models.User{
 		Model:          models.Model{},
 		PassportSerie:  6617,
 		PassportNumber: 891323,
 		PassHash:       []byte{0, 1, 2, 3},
 	},
+}
+
+func TestCleanUp(t *testing.T) {
+	db, err := connect(&cfg)
+	require.NoError(t, err)
+
+	err = dropLocalUsersTable(db)
+	require.NoError(t, err)
+
+	err = dropLocalAdminsTable(db)
+	require.NoError(t, err)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -84,9 +94,9 @@ func TestUpdateUser(t *testing.T) {
 	for i, _ := range cases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			var ctx context.Context
-			passportSerie := gofakeit.Uint16()
-			passportNumber := gofakeit.Uint32()
-			err := db.UpdateUser(ctx, &models.UserDB{
+			passportSerie := uint16(gofakeit.Uint8())
+			passportNumber := uint32(gofakeit.Uint16())
+			err := db.UpdateUser(ctx, &models.User{
 				Model:          models.Model{ID: uint64(i + 1)},
 				PassportSerie:  passportSerie,
 				PassportNumber: passportNumber,
@@ -111,9 +121,9 @@ func TestGetUserByPassport(t *testing.T) {
 	for i, _ := range cases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			var ctx context.Context
-			passportSerie := gofakeit.Uint16()
-			passportNumber := gofakeit.Uint32()
-			_, err := db.CreateUser(ctx, &models.UserDB{
+			passportSerie := uint16(gofakeit.Uint8())
+			passportNumber := uint32(gofakeit.Uint16())
+			_, err := db.CreateUser(ctx, &models.User{
 				Model:          models.Model{},
 				PassportSerie:  passportSerie,
 				PassportNumber: passportNumber,
@@ -172,17 +182,6 @@ func TestIsAdmin(t *testing.T) {
 	return
 }
 
-func TestCleanUp(t *testing.T) {
-	db, err := connect(&cfg)
-	require.NoError(t, err)
-
-	err = dropLocalUsersTable(db)
-	require.NoError(t, err)
-
-	err = dropLocalAdminsTable(db)
-	require.NoError(t, err)
-}
-
 func dropLocalUsersTable(db *sql.DB) error {
 
 	if _, err := db.Exec("DROP TABLE IF EXISTS users"); err != nil {
@@ -198,7 +197,11 @@ func dropLocalAdminsTable(db *sql.DB) error {
 	return nil
 }
 
-func addSuperUser(db *sql.DB, passportSerie uint16, passportNumber uint32) (uint64, error) {
+func addSuperUser(cfg *config.Database, passportSerie uint16, passportNumber uint32) (uint64, error) {
+	db, err := connect(cfg)
+	if err != nil {
+		return 0, err
+	}
 
 	passHash := []byte{1, 2, 3, 4, 5, 6}
 	var id uint64
@@ -214,22 +217,35 @@ func addSuperUser(db *sql.DB, passportSerie uint16, passportNumber uint32) (uint
 	return id, nil
 }
 
-func addSuperUser1(db *gorm.DB, passportSerie uint16, passportNumber uint32) (uint64, error) {
+//func addSuperUser1(db *gorm.DB, passportSerie uint16, passportNumber uint32) (uint64, error) {
+//	var id uint64
+//	var ctx context.Context
+//	usr := models.User{
+//		Model:          models.Model{},
+//		PassportSerie:  passportSerie,
+//		PassportNumber: passportNumber,
+//		PassHash:       []byte{1, 2, 3, 4, 5, 6},
+//	}
+//	if res := db.WithContext(ctx).Model(&models.User{}).Clauses(clause.Returning{Columns: []clause.Column{{Name: "id"}}}).
+//		Create(usr); res.Error != nil {
+//		return 0, res.Error
+//	}
+//
+//	if res := db.Create(&models.Admin{
+//		UserId:  id,
+//		IsAdmin: true,
+//	}); res.Error != nil {
+//		return 0, res.Error
+//	}
+//
+//	return id, nil
+//}
 
-	passHash := []byte{1, 2, 3, 4, 5, 6}
-	var id uint64
-
-	if err := db.Create(&models.AdminDB{
-		UserId:  id,
-		IsAdmin: true,
-	}); err != nil {
-		return 0, err
+func deleteSuperUser(cfg *config.Database, id uint64) error {
+	db, err := connect(cfg)
+	if err != nil {
+		return err
 	}
-
-	return id, nil
-}
-
-func deleteSuperUser(db *sql.DB, id uint64) error {
 	if _, err := db.Exec("DELETE FROM admins WHERE user_id = $1", id); err != nil {
 		return err
 	}

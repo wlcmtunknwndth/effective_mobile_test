@@ -35,7 +35,7 @@ func New(config *config.Database) (*Storage, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	if err = db.AutoMigrate(&models.User{}, &models.Task{}, &models.Admin{}); err != nil {
+	if err = db.AutoMigrate(&models.UserDB{}, &models.TaskDB{}, &models.AdminDB{}); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 

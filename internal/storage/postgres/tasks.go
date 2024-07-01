@@ -7,10 +7,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (s *Storage) CreateTask(ctx context.Context, task *models.Task) (uint64, error) {
+func (s *Storage) CreateTask(ctx context.Context, task *models.TaskDB) (uint64, error) {
 	const op = scope + "CreateTask"
 
-	if res := s.db.Model(&models.Task{}).Clauses(
+	if res := s.db.WithContext(ctx).Model(&models.TaskDB{}).Clauses(
 		clause.Returning{Columns: []clause.Column{{Name: "id"}}}).
 		Create(task); res.Error != nil {
 		return 0, fmt.Errorf("%s: %w", op, res.Error)
@@ -19,9 +19,10 @@ func (s *Storage) CreateTask(ctx context.Context, task *models.Task) (uint64, er
 	return task.ID, nil
 }
 
-func (s *Storage) GetWorkload(ctx context.Context, passportNumber string) ([]models.Task, error) {
-	const op = scope + "GetWorkload"
-
-	var tasks []models.Task
-	s.db.Model(&models.Task{}).Order("expires_at desc").Where("user_id = ?")
-}
+//func (s *Storage) GetWorkload(ctx context.Context, passportNumber string) ([]models.TaskDB, error) {
+//	const op = scope + "GetWorkload"
+//
+//	s.db.Model(&models.UserDB{}).Where(" = ?")
+//	var tasks []models.TaskDB
+//	s.db.WithContext(ctx).Model(&models.TaskDB{}).Where("user_id = ?").Order("expires_at desc")
+//}

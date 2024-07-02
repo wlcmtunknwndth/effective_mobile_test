@@ -27,7 +27,7 @@ services:
       - PGUSER=postgres
     ports:
       - "5432:5432"
-    networks: ["nats"]
+    networks: ["NATS"]
 
     healthcheck:
       test: ["CMD", "pg_isready"]
@@ -41,12 +41,12 @@ services:
       - "8888:8888"
       - "4222:4222"
       - "8222:8222"
-    command: "--cluster_name NATS -p 4222 --cluster nats://0.0.0.0:8888 --http_port 8222"
-    networks: ["nats"]
+    command: "--cluster_name NATS -p 4222 --cluster NATS://0.0.0.0:8888 --http_port 8222"
+    networks: ["NATS"]
 
 networks:
   nats:
-    name: nats
+    name: NATS
 
 volumes:
   db:

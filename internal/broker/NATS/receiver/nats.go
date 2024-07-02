@@ -6,13 +6,15 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/wlcmtunknwndth/effective_mobile_test/internal/config"
 	"github.com/wlcmtunknwndth/effective_mobile_test/internal/domain/models"
+	"log/slog"
 	"time"
 )
 
 type UsersStorage interface {
-	GetUserByPassport(ctx context.Context, passportNumber string) (*models.User, error)
+	GetUserByPassport(ctx context.Context, passportSerie uint16, passportNumber uint32) (*models.User, error)
 
 	CreateUser(ctx context.Context, user *models.User) (uint64, error)
+	//CreateUserInf(ctx)
 	GetUser(ctx context.Context, id uint64) (*models.User, error)
 	DeleteUser(ctx context.Context, id uint64) error
 	UpdateUser(ctx context.Context, user *models.User) error
@@ -25,14 +27,17 @@ type TasksStorage interface {
 }
 
 type Receiver struct {
-	conn  *nats.Conn
-	users UsersStorage
-	tasks TasksStorage
+	conn         *nats.Conn
+	users        UsersStorage
+	tasks        TasksStorage
+	log          *slog.Logger
+	usersHandler *nats.Subscription
+	tasksHandler *nats.Subscription
 }
 
 const scope = "internal.broker.nats."
 
-func New(cfg *config.Broker, users UsersStorage, tasks TasksStorage) (*Receiver, error) {
+func New(cfg *config.Broker, users UsersStorage, tasks TasksStorage, logger *slog.Logger) (*Receiver, error) {
 	const op = scope + "New"
 	natsSrv, err := nats.Connect(cfg.Address,
 		nats.RetryOnFailedConnect(cfg.Retry),
@@ -51,6 +56,7 @@ func New(cfg *config.Broker, users UsersStorage, tasks TasksStorage) (*Receiver,
 		conn:  natsSrv,
 		users: users,
 		tasks: tasks,
+		log:   logger,
 	}, nil
 }
 

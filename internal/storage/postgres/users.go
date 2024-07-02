@@ -19,6 +19,16 @@ func (s *Storage) CreateUser(ctx context.Context, user *models.User) (uint64, er
 	return user.ID, nil
 }
 
+func (s *Storage) AddUserInfo(ctx context.Context, info *models.UserInfo) error {
+	const op = scope + "AddUserInfo"
+
+	if res := s.db.WithContext(ctx).Model(&models.UserInfo{}).Create(info); res.Error != nil {
+		return fmt.Errorf("%s: %w", op, res.Error)
+	}
+
+	return nil
+}
+
 func (s *Storage) DeleteUser(ctx context.Context, id uint64) error {
 	const op = scope + "DeleteUser"
 

@@ -13,5 +13,5 @@ server:
 broker:
   max_reconnects: 5
   reconnect_wait: 5s
-  address: "nats://nats:4222"
+  address: "NATS://NATS:4222"
   retry: Yes

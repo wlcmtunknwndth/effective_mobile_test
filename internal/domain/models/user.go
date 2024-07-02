@@ -1,6 +1,9 @@
 package models
 
 import (
+	"errors"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"strconv"
 	"strings"
 )
@@ -17,7 +20,7 @@ type UserInfo struct {
 	Name       string `gorm:"type:varchar(30)"`
 	Surname    string `gorm:"type:varchar(30)"`
 	Patronymic string `gorm:"type:varchar(30)"`
-	Address    string
+	Address    string `gorm:"type:varchar(128)"`
 }
 
 type CreateUserAPI struct {
@@ -43,30 +46,61 @@ type UserAPI struct {
 	PassHash []byte `json:"password"`
 }
 
-func StringToSerieAndNumber(passportId string) (uint16, uint32) {
+var WrongNumber = errors.New("wrong passport number")
+var WrongSerie = errors.New("wrong passport serie")
+var WrongFormat = errors.New("wrong format")
+
+func StringToSerieAndNumber(passportId string) (*uint64, *uint64, error) {
 	res := strings.Split(passportId, " ")
 	if len(res) != 2 {
-		return 0, 0
+		return nil, nil, fmt.Errorf("%s: %w", passportId, WrongFormat)
 	}
+
 	serie, err := strconv.ParseUint(res[0], 10, 16)
 	if err != nil {
-		return 0, 0
+		return nil, nil, fmt.Errorf("%s: %w", res[0], WrongSerie)
 	}
 
 	number, err := strconv.ParseUint(res[1], 10, 32)
 	if err != nil {
-		return 0, 0
+		return nil, nil, fmt.Errorf("%s: %w", res[1], WrongNumber)
 	}
 
-	return uint16(serie), uint32(number)
+	return &serie, &number, nil
 }
 
-func ApiToDB(api UserAPI) User {
-	serie, number := StringToSerieAndNumber(api.Passport)
-	return User{
-		Model:          Model{ID: api.ID},
-		PassportSerie:  serie,
-		PassportNumber: number,
-		PassHash:       api.PassHash,
+func ApiToDB(api *UserAPI) (*User, error) {
+	serie, number, err := StringToSerieAndNumber(api.Passport)
+	if err != nil {
+		return nil, err
 	}
+	return &User{
+		Model:          Model{ID: api.ID},
+		PassportSerie:  uint16(*serie),
+		PassportNumber: uint32(*number),
+		PassHash:       api.PassHash,
+	}, nil
+}
+
+func CreateUserToUsersDB(api *CreateUserAPI) (*User, *UserInfo, error) {
+	serie, number, err := StringToSerieAndNumber(api.Passport)
+	if err != nil {
+		return nil, nil, err
+	}
+	passHash, err := bcrypt.GenerateFromPassword([]byte(api.Password), 5)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &User{
+			Model:          Model{},
+			PassportSerie:  uint16(*serie),
+			PassportNumber: uint32(*number),
+			PassHash:       passHash,
+		}, &UserInfo{
+			UserID:     0,
+			Name:       api.Name,
+			Surname:    api.Surname,
+			Patronymic: api.Patronymic,
+			Address:    api.Address,
+		}, nil
 }
